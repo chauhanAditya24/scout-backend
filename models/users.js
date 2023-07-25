@@ -1,15 +1,28 @@
 const mongoose = require('mongoose')
+const validator = require('validator')
+
 const Schema = mongoose.Schema
 
 const usersSchema = new Schema({
     username: {
         type: String,
-        required: true
+        required: ['name is required for login',true],
+        min: 4,
+        max: 64,
+        unique: true
     },
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate:{
+            validator: function (value) {
+                return validator.isEmail(value)
+            },
+            message: function () {
+                return 'invalid email format'
+            }
+        }
     },
     phone: {
         required: true,
@@ -22,7 +35,7 @@ const usersSchema = new Schema({
         type: String,
         required: true,
         minlength: 8,
-        maxlength: 32
+        maxlength: 128
     },
     role: {
         type: String,
