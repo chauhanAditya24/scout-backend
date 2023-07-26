@@ -107,6 +107,17 @@ usersCltr.delete = ( req, res) => {
         })
 }
 
+usersCltr.updateDetails = ( req, res) => {
+        const {body} = req
+        User.findByIdAndUpdate( req.userId , body , { new: true, runValidators:true})
+            .then((user) => {
+                res.json(user)
+            })
+            .catch((err) => {
+                res.json(err)
+            })
+}
+
 usersCltr.update = ( req, res) => {
     const id = req.params.id
     const body = req.body
