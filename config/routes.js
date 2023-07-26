@@ -8,10 +8,11 @@ const authenticateUser = require('../middlewares/authenticate')
 router.get('/scout/list', usersCltr.list)
 router.post('/scout/register', usersCltr.register)
 router.delete('/scout/remove/:id', usersCltr.delete)
-router.put('/scout/update/:id', usersCltr.update)
+router.put('/scout/update/:id', authenticateUser ,usersCltr.update)
 router.get('/scout/show/:id', usersCltr.show)
 router.post('/scout/login', usersCltr.login)
 router.get('/scout/user/account', authenticateUser, usersCltr.account)
+router.put('/scout/user/update' , authenticateUser, usersCltr.updateDetails)
 
 
 
