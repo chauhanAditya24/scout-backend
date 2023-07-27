@@ -24,6 +24,18 @@ groundsCltr.register = ( req, res ) => {
         })
 }
 
+groundsCltr.search = ( req , res) => {
+    const {body} = req
+    console.log(body)
+    Ground.find({city: body.city, sport: body.sport})
+        .then((grounds) => {
+            res.json(grounds)
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+}
+
 groundsCltr.delete = ( req, res) => {
     const id = req.params.id
     Ground.findByIdAndDelete(id)

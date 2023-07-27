@@ -37,6 +37,14 @@ const usersSchema = new Schema({
         minlength: 8,
         maxlength: 128
     },
+    city:{
+        required: true,
+        type: String
+    },
+    sport: {
+        required: true,
+        type: String
+    },
     role: {
         type: String,
         default: 'player'
