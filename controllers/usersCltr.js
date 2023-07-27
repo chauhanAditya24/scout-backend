@@ -95,6 +95,17 @@ usersCltr.account = async ( req , res ) => {
 
 }  
 
+usersCltr.search = ( req , res) => {
+    const {body} = req
+    User.find({city: body.city, sport: body.sport})
+        .then((users) => {
+            res.json(users)
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+}
+
 
 usersCltr.delete = ( req, res) => {
     const {id} = req.params

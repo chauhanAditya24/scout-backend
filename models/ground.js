@@ -19,6 +19,10 @@ const groundSchema = new Schema({
         required: true,
         min: 1
     },
+    sport:{
+        type: String,
+        required:true
+    },
     timings: {
         type: String,
         required: true
