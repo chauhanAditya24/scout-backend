@@ -24,6 +24,17 @@ groundsCltr.register = ( req, res ) => {
         })
 }
 
+groundsCltr.selectedGround = ( req , res ) => {
+    const id = req.params.id
+    Ground.findById(id)
+        .then((ground) => {
+            res.json(ground)
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+} 
+
 groundsCltr.search = ( req , res) => {
     const {body} = req
     console.log(body)

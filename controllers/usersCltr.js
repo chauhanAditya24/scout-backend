@@ -107,6 +107,17 @@ usersCltr.search = ( req , res) => {
 }
 
 
+usersCltr.player = ( req , res ) => {
+    const { id } = req.params
+    User.findById(id)
+        .then((player) => {
+            res.json(player)
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+} 
+
 usersCltr.delete = ( req, res) => {
     const {id} = req.params
     User.findByIdAndDelete(id)
