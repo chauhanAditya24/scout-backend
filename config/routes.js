@@ -17,6 +17,7 @@ router.get('/scout/user/account', authenticateUser, usersCltr.account)
 router.put('/scout/user/update' , authenticateUser, usersCltr.updateDetails)
 // route to get specific userso for a particualr city
 router.post('/scout/users/specific', authenticateUser, usersCltr.search)
+router.get('/scout/player/:id', usersCltr.player)
 
 //cities
 router.post('/scout/cities', citiesCltr.add)
@@ -34,5 +35,6 @@ router.get('/scout/grounds/:id', groundsCltr.show)
 router.put('/scout/grounds/update/:id', groundsCltr.update)
 // to find ground based on city and sport
 router.post('/scout/grounds/specific',authenticateUser, groundsCltr.search)
+router.get(`/scout/ground/selected/:id` , groundsCltr.selectedGround)
 
 module.exports = router 
