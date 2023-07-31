@@ -1,6 +1,7 @@
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const fs = require('fs')
 
 usersCltr = {}
 
@@ -14,6 +15,7 @@ usersCltr.list = ( req, res) => {
             res.json(err)
         })
 }
+
 
 usersCltr.register = async ( req, res ) => {
     try{

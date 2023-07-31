@@ -6,6 +6,7 @@ const citiesCltr = require('../controllers/cityCltr')
 const sportsCltr = require('../controllers/sportsCltr')
 const authenticateUser = require('../middlewares/authenticate')
 
+
 //usersCltr functionalities
 router.get('/scout/list', usersCltr.list)
 router.post('/scout/register', usersCltr.register)
@@ -18,6 +19,8 @@ router.put('/scout/user/update' , authenticateUser, usersCltr.updateDetails)
 // route to get specific userso for a particualr city
 router.post('/scout/users/specific', authenticateUser, usersCltr.search)
 router.get('/scout/player/:id', usersCltr.player)
+
+
 
 //cities
 router.post('/scout/cities', citiesCltr.add)
