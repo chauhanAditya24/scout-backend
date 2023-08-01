@@ -5,11 +5,38 @@ const groundsCltr = require('../controllers/groundCltr')
 const citiesCltr = require('../controllers/cityCltr')
 const sportsCltr = require('../controllers/sportsCltr')
 const authenticateUser = require('../middlewares/authenticate')
+const multer = require('multer')
 
+const storage = multer.diskStorage({
+    destination: function ( req, file, cb) {
+        cb(null , './uploaded_images')
+    },
+    filename: function ( req, file, cb) {
+        cb( null ,Date.now()+ '-' +file.originalname)
+    }
+})
+
+const fileFilter = ( req , file ,cb) => {
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png' ){
+        cb(null , true)
+    }else{
+        cb({error: 'check your image type'},false)
+    }
+}
+
+const upload = multer({ 
+    storage: storage , 
+    limits:{
+    fileSize: 1024 * 1024 * 100
+    }
+    // fileFilter: fileFilter
+})
 
 //usersCltr functionalities
 router.get('/scout/list', usersCltr.list)
-router.post('/scout/register', usersCltr.register)
+router.post('/scout/register', upload.single('profilePicture') ,usersCltr.register)
+// testing image on frontend temporary api
+router.get('/scout/image/:id', usersCltr.picture)
 router.delete('/scout/remove/:id', usersCltr.delete)
 router.put('/scout/update/:id', authenticateUser ,usersCltr.update)
 router.get('/scout/show/:id', usersCltr.show)
@@ -19,8 +46,6 @@ router.put('/scout/user/update' , authenticateUser, usersCltr.updateDetails)
 // route to get specific userso for a particualr city
 router.post('/scout/users/specific', authenticateUser, usersCltr.search)
 router.get('/scout/player/:id', usersCltr.player)
-
-
 
 //cities
 router.post('/scout/cities', citiesCltr.add)

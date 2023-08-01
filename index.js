@@ -1,28 +1,21 @@
 const express = require('express')
+const multer = require('multer')
 const cors = require('cors')
 require('dotenv').config()
 const configureDB = require('./config/configureDatabase')
 const router = require('./config/routes')
+const User = require('./models/users')
 const app = express()
-const multer = require('multer')
-const GridFsStorage = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
+const path = require('path')
+// const usersCltr = require('./controllers/usersCltr')
 
-app.use(express.json())
 app.use(cors())
-
+app.use(express.static('uploaded_images'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 
 //connecting to database
-const db = configureDB()
-// db.once('open', () => {
-//     // Init stream
-//     gfs = Grid(conn.db, mongoose.mongo);
-//     gfs.collection('uploads');
-//   });
-
-
-
-  
+configureDB()
 
 //using routes
 app.use(router)

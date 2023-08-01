@@ -1,7 +1,6 @@
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const fs = require('fs')
 
 usersCltr = {}
 
@@ -20,9 +19,21 @@ usersCltr.list = ( req, res) => {
 usersCltr.register = async ( req, res ) => {
     try{
         const body = req.body
-        const userObj = new User(body)
+        const file = req.file
+        console.log('body = ', body)
+        console.log('file = ', file)
+        // res.json({error: 'successfullt submitted the user'})
+        const userObj = new User({
+            username: body.username,
+            email: body.email,
+            phone:body.phone,
+            password: body.password,
+            city: body.city,
+            sport: body.sport,
+            profilePicture: file.path
+        })
         
-        //checking if the user already exist or not
+        // checking if the user already exist or not
         const userCheckEmail = await User.findOne({ email: userObj.email })
         const userCheckPhone = await User.findOne({ phone: userObj.phone})
 
@@ -40,11 +51,9 @@ usersCltr.register = async ( req, res ) => {
             const user = await userObj.save()
             res.json(user)
         }
-
     }catch(e){
         res.json(e)
     }
-    
     
     // const {body} = req
     // const user = new User(body)
@@ -56,6 +65,18 @@ usersCltr.register = async ( req, res ) => {
     //     .catch((err) => {
     //         res.json(err)
     //     })
+}
+
+
+usersCltr.picture = async ( req , res ) => {
+    try{
+        const { id } = req.params
+        const user = await User.findById(id)
+        res.json(user)
+    }
+    catch(e) {
+        res.json(e)
+    }
 }
 
 
