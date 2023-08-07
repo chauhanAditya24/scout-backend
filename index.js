@@ -4,9 +4,6 @@ require('dotenv').config()
 const configureDB = require('./config/configureDatabase')
 const router = require('./config/routes')
 const app = express()
-const multer = require('multer')
-const GridFsStorage = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
 
 app.use(express.json())
 app.use(cors())
