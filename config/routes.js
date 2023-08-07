@@ -4,6 +4,7 @@ const usersCltr = require('../controllers/usersCltr')
 const groundsCltr = require('../controllers/groundCltr')
 const citiesCltr = require('../controllers/cityCltr')
 const sportsCltr = require('../controllers/sportsCltr')
+const bookingsCltr = require('../controllers/bookingsCltr')
 const authenticateUser = require('../middlewares/authenticate')
 
 
@@ -19,7 +20,7 @@ router.put('/scout/user/update' , authenticateUser, usersCltr.updateDetails)
 // route to get specific userso for a particualr city
 router.post('/scout/users/specific', authenticateUser, usersCltr.search)
 router.get('/scout/player/:id', usersCltr.player)
-
+router.get('/scout/user/login',authenticateUser, usersCltr.currentUser)
 
 
 //cities
@@ -39,5 +40,14 @@ router.put('/scout/grounds/update/:id', groundsCltr.update)
 // to find ground based on city and sport
 router.post('/scout/grounds/specific',authenticateUser, groundsCltr.search)
 router.get(`/scout/ground/selected/:id` , groundsCltr.selectedGround)
+//grounds own by a particular user
+router.get('/scout/ground/user',authenticateUser,groundsCltr.usersGround)
+
+
+//booking ground
+router.post('/scout/ground/book', authenticateUser ,bookingsCltr.book)
+router.post('/scout/ground/availability', authenticateUser ,bookingsCltr.check)
+
+
 
 module.exports = router 
