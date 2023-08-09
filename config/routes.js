@@ -49,7 +49,6 @@ router.post('/scout/users/specific', authenticateUser, usersCltr.search)
 router.get('/scout/player/:id', usersCltr.player)
 router.get('/scout/user/login',authenticateUser, usersCltr.currentUser)
 
-
 //cities
 router.post('/scout/cities', citiesCltr.add)
 router.get('/scout/cities/list', citiesCltr.list)

@@ -38,12 +38,18 @@ const usersSchema = new Schema({
         maxlength: 128
     },
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 43f29585e020a78f88e833ecfb263acc44a187da
     profilePicture:{
         required: true,
         type: String
     },
+<<<<<<< HEAD
 =======
 >>>>>>> 811f622036d96024f7ec0c8ab02497d33664470e
+=======
+>>>>>>> 43f29585e020a78f88e833ecfb263acc44a187da
     city:{
         required: true,
         type: String
