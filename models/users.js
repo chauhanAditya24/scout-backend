@@ -37,6 +37,10 @@ const usersSchema = new Schema({
         minlength: 8,
         maxlength: 128
     },
+    profilePicture:{
+        required: true,
+        type: String
+    },
     city:{
         required: true,
         type: String
