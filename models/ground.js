@@ -17,7 +17,7 @@ const groundSchema = new Schema({
     price: {
         type: String,
         required: true,
-        min: 1
+        minlength: 1
     },
     sport:{
         type: String,
@@ -26,10 +26,24 @@ const groundSchema = new Schema({
     timings: {
         type: String,
         required: true
+    },
+    slotType:{
+        type:String,
+        required: true,
+        minlength:1,
+        maxlength:3
+    },
+    userId:{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    capacity:{
+        type:String,
+        required:true,
+        minlength:1,
+        maxlength:30
     }
-
     //need to have a reference of the owner/user
-
 })
 
 const Ground = mongoose.model('Ground', groundSchema)

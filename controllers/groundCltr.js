@@ -24,6 +24,16 @@ groundsCltr.register = ( req, res ) => {
         })
 }
 
+groundsCltr.usersGround = async ( req , res ) => {
+    try{
+        const ground = await Ground.find({userId: req.userId})
+        res.json(ground)
+    }
+    catch(err) {
+        res.json(err)
+    }
+}
+
 groundsCltr.selectedGround = ( req , res ) => {
     const id = req.params.id
     Ground.findById(id)

@@ -16,6 +16,22 @@ usersCltr.list = ( req, res) => {
 }
 
 
+usersCltr.currentUser = async ( req , res ) => {
+    try {
+        console.log('inside the current user function')
+        const user =await User.findById(req.userId)
+        if(user){
+            res.json(user)
+            console.log('current user' , user)
+        }else{
+            res.json({error:'404'})
+        }
+    }
+    catch(e) {
+        res.json(e)
+    }
+}
+
 usersCltr.register = async ( req, res ) => {
 
     console.log('req file ', req.file)
@@ -57,6 +73,7 @@ usersCltr.register = async ( req, res ) => {
     }catch(e){
         res.json(e)
     }
+} 
     
     // const {body} = req
     // const user = new User(body)
@@ -68,7 +85,6 @@ usersCltr.register = async ( req, res ) => {
     //     .catch((err) => {
     //         res.json(err)
     //     })
-}
 
 
 usersCltr.picture = async ( req , res ) => {
@@ -97,12 +113,13 @@ usersCltr.login = async ( req , res) => {
                     token: `Bearer ${token}`
                 })
             }else{
-                res.json({ error: 'invalid password or email'})
+                res.json({ error: 'invalid email or password'})
             }
         }else{
-            res.json({ error: 'invalid password or email'})
+            res.json({ error: 'invalid email or password'})
         }
     }catch(e){
+        console.log('error in catch block')
         res.json(e)
     }
 }

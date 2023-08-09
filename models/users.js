@@ -7,8 +7,8 @@ const usersSchema = new Schema({
     username: {
         type: String,
         required: ['name is required for login',true],
-        min: 4,
-        max: 64,
+        minlength: 4,
+        maxlength: 64,
         unique: true
     },
     email: {
@@ -37,10 +37,13 @@ const usersSchema = new Schema({
         minlength: 8,
         maxlength: 128
     },
+<<<<<<< HEAD
     profilePicture:{
         required: true,
         type: String
     },
+=======
+>>>>>>> 811f622036d96024f7ec0c8ab02497d33664470e
     city:{
         required: true,
         type: String
@@ -51,7 +54,7 @@ const usersSchema = new Schema({
     },
     role: {
         type: String,
-        default: 'player'
+        required: true
     }
 })
 
