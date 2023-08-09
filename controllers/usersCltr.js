@@ -17,11 +17,13 @@ usersCltr.list = ( req, res) => {
 
 
 usersCltr.register = async ( req, res ) => {
+
+    console.log('req file ', req.file)
     try{
         const body = req.body
         const file = req.file
-        console.log('body = ', body)
-        console.log('file = ', file)
+        // console.log('body = ', body)
+        // console.log('file = ', file.destination + '/' + file.filename)
         // res.json({error: 'successfullt submitted the user'})
         const userObj = new User({
             username: body.username,
@@ -31,6 +33,7 @@ usersCltr.register = async ( req, res ) => {
             city: body.city,
             sport: body.sport,
             profilePicture: file.path
+            // profilePicture: file.destination + '/' + file.filename
         })
         
         // checking if the user already exist or not
