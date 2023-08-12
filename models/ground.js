@@ -42,6 +42,10 @@ const groundSchema = new Schema({
         required:true,
         minlength:1,
         maxlength:30
+    },
+    groundPicture:{
+        required:true,
+        type:String
     }
     //need to have a reference of the owner/user
 })

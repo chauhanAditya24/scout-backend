@@ -52,6 +52,12 @@ const usersSchema = new Schema({
     role: {
         type: String,
         required: true
+    },
+    bio:{
+        required: true,
+        minlength:5,
+        maxlength:100,
+        type: String
     }
 })
 

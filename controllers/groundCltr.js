@@ -2,7 +2,7 @@ const Ground = require('../models/ground')
 
 const groundsCltr = {}
 
-groundsCltr.list = ( req , res ) => {
+groundsCltr.list = (req, res) => {
     Ground.find()
         .then((ground) => {
             res.json(ground)
@@ -12,29 +12,53 @@ groundsCltr.list = ( req , res ) => {
         })
 }
 
-groundsCltr.register = ( req, res ) => {
-    const {body} = req
-    const grounds = new Ground(body)
-    grounds.save()
-        .then((ground) => {
-            res.json(ground)
-        })
-        .catch((err) => {
-            res.json(err)
-        })
-}
+groundsCltr.register = async (req, res) => {
+    console.log('ground req',req)
+    try {
+        const { body } = req
+        const { file } = req
 
-groundsCltr.usersGround = async ( req , res ) => {
-    try{
-        const ground = await Ground.find({userId: req.userId})
+        const groundObj = new Ground({
+            name:body.name,
+            location: body.location,
+            city: body.city,
+            price: body.price,
+            timings: body.timings,
+            sport: body.sport,
+            slotType: body.slotType,
+            userId:body.userId,
+            capacity:body.capacity,
+            groundPicture:file.filename
+        })
+
+        const ground = await groundObj.save()
         res.json(ground)
+
+    //     const grounds = new Ground(body)
+    //     grounds.save()
+    //         .then((ground) => {
+    //             res.json(ground)
+    //         })
+    //         .catch((err) => {
+    //             res.json(err)
+    //         })
     }
-    catch(err) {
+    catch (err) {
         res.json(err)
     }
 }
 
-groundsCltr.selectedGround = ( req , res ) => {
+groundsCltr.usersGround = async (req, res) => {
+    try {
+        const ground = await Ground.find({ userId: req.userId })
+        res.json(ground)
+    }
+    catch (err) {
+        res.json(err)
+    }
+}
+
+groundsCltr.selectedGround = (req, res) => {
     const id = req.params.id
     Ground.findById(id)
         .then((ground) => {
@@ -43,12 +67,12 @@ groundsCltr.selectedGround = ( req , res ) => {
         .catch((err) => {
             res.json(err)
         })
-} 
+}
 
-groundsCltr.search = ( req , res) => {
-    const {body} = req
+groundsCltr.search = (req, res) => {
+    const { body } = req
     console.log(body)
-    Ground.find({city: body.city, sport: body.sport})
+    Ground.find({ city: body.city, sport: body.sport })
         .then((grounds) => {
             res.json(grounds)
         })
@@ -57,7 +81,7 @@ groundsCltr.search = ( req , res) => {
         })
 }
 
-groundsCltr.delete = ( req, res) => {
+groundsCltr.delete = (req, res) => {
     const id = req.params.id
     Ground.findByIdAndDelete(id)
         .then((ground) => {
@@ -68,8 +92,8 @@ groundsCltr.delete = ( req, res) => {
         })
 }
 
-groundsCltr.show = ( req, res) => {
-    const {id} = req.params
+groundsCltr.show = (req, res) => {
+    const { id } = req.params
     Ground.findById(id)
         .then((ground) => {
             res.json(ground)
@@ -79,10 +103,10 @@ groundsCltr.show = ( req, res) => {
         })
 }
 
-groundsCltr.update = ( req, res) => {
-    const id =req.params.id
+groundsCltr.update = (req, res) => {
+    const id = req.params.id
     const body = req.body
-    Ground.findByIdAndUpdate(id, body, {new: true, runValidators: true})
+    Ground.findByIdAndUpdate(id, body, { new: true, runValidators: true })
         .then((ground) => {
             res.json(ground)
         })

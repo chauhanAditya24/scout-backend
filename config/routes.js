@@ -59,7 +59,7 @@ router.get('/scout/sports/list', sportsCltr.list)
 
 // ground functionalities
 router.get('/scout/grounds/all', groundsCltr.list)
-router.post('/scout/grounds/register', groundsCltr.register)
+router.post('/scout/grounds/register', upload.single('groundPicture'),groundsCltr.register)
 router.delete('/scout/grounds/remove/:id', groundsCltr.delete)
 router.get('/scout/grounds/:id', groundsCltr.show)
 router.put('/scout/grounds/update/:id', groundsCltr.update)
