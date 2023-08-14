@@ -73,6 +73,8 @@ router.get('/scout/ground/user',authenticateUser,groundsCltr.usersGround)
 //booking ground
 router.post('/scout/ground/book', authenticateUser ,bookingsCltr.book)
 router.post('/scout/ground/availability', authenticateUser ,bookingsCltr.check)
+router.get('/scout/bookings',authenticateUser , bookingsCltr.list)
+router.get('/scout/bookings/cancel/:id',authenticateUser, bookingsCltr.cancel)
 
 
 
