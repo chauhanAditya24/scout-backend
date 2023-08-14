@@ -10,6 +10,10 @@ const bookingSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Ground'
     },
+    managerId:{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
     time: {
         type: String,
         required: true
