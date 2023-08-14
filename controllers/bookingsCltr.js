@@ -60,19 +60,37 @@ bookingCltr.book = async (req, res) => {
 bookingCltr.check = async (req, res) => {
     try {
         const { body } = req
-        console.log(body.time)
+        console.log('body ', body)
+
+        const startTime2 = body.time.split('-')[0]
+        const endTime2 = body.time.split('-')[1]
 
         const data = await Booking.find({ groundId: body.groundId })
-        // console.log(data)
+        console.log(' time 2 ', data)
 
+        // const startTime1 = data.time.split('-')[0]
+        // const endTime1 = data.time.split('-')[1]
 
         if (data) {
             let flag = false
             data.forEach((ele) => {
                 // console.log('date : ', typeof ele.date , typeof body.date, ele.date ,body.date )
                 // console.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
-                if (ele.time === body.time && ele.date === body.date) {
-                    flag = true
+                // if (ele.time === body.time && ele.date === body.date) {
+                //     flag = true
+                // }
+
+                if (ele.date === body.date) {
+
+                    const startTime1 = ele.time.split('-')[0]
+                    const endTime1 = ele.time.split('-')[1]         
+                               
+                    if ((startTime1 === startTime2 && endTime1 === endTime2) || (startTime1 > startTime2 && endTime1 === endTime2) || (startTime1 === startTime2 && endTime1 < endTime2) || (startTime2 > startTime1 && startTime2 < endTime1) || (startTime1 > startTime2 && endTime1 < endTime2) || (startTime1 < endTime2 && endTime1 > endTime2)) {
+                        // console.log('slot is not avaiable')
+                        flag = true
+                    } //else {
+                        //console.log('slot is avaiable')
+                    //}
                 }
             })
 
@@ -114,8 +132,8 @@ bookingCltr.list = async (req, res) => {
     }
 }
 
-bookingCltr.managerList = async(req, res) => {
-    try{
+bookingCltr.managerList = async (req, res) => {
+    try {
         // console.log(' user id',req.userId)
         const bookings = await Booking.find({ managerId: req.userId })
         if (bookings.length > 0) {
@@ -131,7 +149,7 @@ bookingCltr.managerList = async(req, res) => {
             res.json({ msg: 'no booking done' })
         }
     }
-    catch(err){
+    catch (err) {
         res.json(err)
     }
 }
