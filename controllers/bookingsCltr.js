@@ -114,13 +114,35 @@ bookingCltr.list = async (req, res) => {
     }
 }
 
-bookingCltr.cancel = async (req, res) => {
+bookingCltr.managerList = async(req, res) => {
     try{
+        // console.log(' user id',req.userId)
+        const bookings = await Booking.find({ managerId: req.userId })
+        if (bookings.length > 0) {
+            const ans = dateToday()
+            console.log('date : ', ans)
+            console.log('date 2', bookings[0].date)
+            const result = bookings.filter((booking) => {
+                return booking.date === ans || booking.date > ans
+            })
+            res.json(result)
+        }
+        else {
+            res.json({ msg: 'no booking done' })
+        }
+    }
+    catch(err){
+        res.json(err)
+    }
+}
+
+bookingCltr.cancel = async (req, res) => {
+    try {
         const { id } = req.params
-        const bookings = await Booking.findByIdAndDelete({_id: id})
+        const bookings = await Booking.findByIdAndDelete({ _id: id })
         res.json(bookings)
     }
-    catch(err) {
+    catch (err) {
         res.json(err)
     }
 }
