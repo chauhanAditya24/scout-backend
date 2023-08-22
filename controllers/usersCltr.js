@@ -1,14 +1,23 @@
+const mongoose = require('mongoose')
 const User = require('../models/users')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Ground = require('../models/ground')
+const Booking = require('../models/booking')
 
 usersCltr = {}
 
 //listing all the users
 usersCltr.list = (req, res) => {
     User.find()
-        .then((user) => {
-            res.json(user)
+        .then((users) => {
+
+            const newUsers = users.filter((user) => {
+                return user._id.toString() !== req.userId
+            })
+
+            res.json(newUsers)
+
         })
         .catch((err) => {
             res.json(err)
@@ -18,11 +27,11 @@ usersCltr.list = (req, res) => {
 
 usersCltr.currentUser = async (req, res) => {
     try {
-        console.log('inside the current user function')
+        // console.log('inside the current user function')
         const user = await User.findById(req.userId)
         if (user) {
             res.json(user)
-            console.log('current user', user)
+            // console.log('current user', user)
         } else {
             res.json({ error: '404' })
         }
@@ -32,9 +41,51 @@ usersCltr.currentUser = async (req, res) => {
     }
 }
 
+usersCltr.pictureUpdate = (req, res) => {
+    const { body } = req
+    // console.log('req.file',req.file)
+    // console.log('req.userId',req.userId)
+    const file = req.file
+    User.findById(req.userId)
+        .then((user) => {
+            user.profilePicture = req.file.filename
+            // console.log('user check',user)
+            User.findByIdAndUpdate(req.userId, user, { new: true, runValidators: true })
+                .then((userUpdated) => {
+                    console.log('updated user', userUpdated)
+                    res.json(userUpdated)
+                })
+                .catch((err) => {
+                    res.json(err)
+                })
+
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+}
+
+// usersCltr.updatePicture = async (req, res) => {
+//     console.log('req for file',req)
+//     try{
+//         const {body} = req
+//         const user = await User.findById(body.id)
+//         // const file = req.file
+//         // const formdata = {
+//             // profilePicture:file.filename
+//         // }
+//         // console.log(file)
+//         // const user = await User.findByIdAndUpdate(req.userId , formdata, {new:true, runValidators:true} )
+//         res.json(user)
+//     }
+//     catch(err){
+//         res.json(err)
+//     }
+// }
+
 usersCltr.register = async (req, res) => {
 
-    console.log('req file ', req.file)
+    // console.log('req file ', req.file)
     try {
         const body = req.body
         const file = req.file
@@ -121,7 +172,7 @@ usersCltr.login = async (req, res) => {
             res.json({ error: 'invalid email or password' })
         }
     } catch (e) {
-        console.log('error in catch block')
+        // console.log('error in catch block')
         res.json(e)
     }
 }
@@ -144,7 +195,10 @@ usersCltr.search = (req, res) => {
     const { body } = req
     User.find({ city: body.city, sport: body.sport })
         .then((users) => {
-            res.json(users)
+            const newUsers = users.filter((user) => {
+                return user._id.toString() !== req.userId
+            })
+            res.json(newUsers)
         })
         .catch((err) => {
             res.json(err)
@@ -163,55 +217,139 @@ usersCltr.player = (req, res) => {
         })
 }
 
-usersCltr.delete = (req, res) => {
-    const { id } = req.params
-    User.findByIdAndDelete(id)
+usersCltr.removePlayer = (req,res) => {
+    const userIdObj = new mongoose.Types.ObjectId(req.userId)
+    const obj = {}
+    const error = {}
+
+    User.findById(req.userId)
+        .then((user) => {
+            User.findByIdAndDelete(res.userId)
+                .then((user) => {
+                    obj.user = user
+                })
+                .catch((err) => {
+                    error.user = err
+                })
+            
+            Booking.deleteMany({userId: req.userId})
+                .then((booking) => {
+                    obj.booking = booking
+                })
+                .catch((err) => {
+                    error.booking = err
+                })
+
+            res.json(obj)
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+} 
+
+usersCltr.removeUser = (req,res) => {
+    const userIdObj = new mongoose.Types.ObjectId(req.userId)
+    console.log(userIdObj)
+
+    const obj ={}
+    const error ={}
+    User.findByIdAndDelete(req.userId)
+        .then((user) => {
+            // res.json(user)
+            obj.user = user
+            Ground.deleteMany({userId: req.userId})
+                .then((grounds) => {
+                    obj.grounds = grounds
+                    // res.json(grounds)
+                })
+                .catch((err) => {
+                    error.ground = err
+                    // res.json(error)
+                })
+            Booking.deleteMany({managerId:req.userId})
+                .then((booking) => {
+                    obj.booking = booking
+                })
+                .catch((err) => {
+                    error.booking = err
+                    res.json(error)
+                })
+
+            res.json(obj)
+        })
+        .catch((err) => {
+            error.User = err
+            res.json(error)
+        })
+}
+
+usersCltr.delete = async (req, res) => {
+    try{
+        const userIdObj = mongoose.Types.ObjectId(req.userId)
+        console.log(userIdObj)
+        const user = await User.findById(req.userId)
+        console.log(user._id.toString())
+        console.log(req.userId)
+        const ground = await Ground.findBy({userId: userIdObj})
+        console.log(ground)
+        res.json({
+            'msg':'reaching'
+        })
+    }
+    catch(err){
+        res.json(err)
+    }
+
+}
+// const { id } = req.params
+// User.findByIdAndDelete(id)
+//     .then((user) => {
+//         res.json(user)
+//     })
+//     .catch((err) => {
+//         res.json(err)
+//     })
+
+
+
+usersCltr.updateDetails = (req, res) => {
+    const { body } = req
+
+    User.findByIdAndUpdate(req.userId, body, { new: true, runValidators: true })
         .then((user) => {
             res.json(user)
         })
         .catch((err) => {
             res.json(err)
         })
-}
-
-usersCltr.updateDetails = (req, res) => {
-        const { body } = req
-
-        User.findByIdAndUpdate(req.userId, body, { new: true, runValidators: true })
-            .then((user) => {
-                res.json(user)
-            })
-            .catch((err) => {
-                res.json(err)
-            })
 
 
-        // const objectUser = new User(body)
-        // console.log('body', body)
+    // const objectUser = new User(body)
+    // console.log('body', body)
 
-        // const user = User.findById(req.userId)
+    // const user = User.findById(req.userId)
 
-        // if(user.password === body.password){
-        //     const userObj = await User.findByIdAndUpdate(req.userId , body, { new: true, runValidators: true})
-        //     console.log('same password',userObj)
-        //     res.json(userObj)
-        // }else{
-        //     const salt = await bcrypt.genSalt()
-        //     const hashPassword = await bcrypt.hash(body.password,salt)
-        //     objectUser.password = hashPassword
+    // if(user.password === body.password){
+    //     const userObj = await User.findByIdAndUpdate(req.userId , body, { new: true, runValidators: true})
+    //     console.log('same password',userObj)
+    //     res.json(userObj)
+    // }else{
+    //     const salt = await bcrypt.genSalt()
+    //     const hashPassword = await bcrypt.hash(body.password,salt)
+    //     objectUser.password = hashPassword
 
-        //     const result = await User.findByIdAndUpdate(req.userId, objectUser , { new: true, runValidators:true})
-        //     console.log('change password', result)
-        //     res.json(result)
+    //     const result = await User.findByIdAndUpdate(req.userId, objectUser , { new: true, runValidators:true})
+    //     console.log('change password', result)
+    //     res.json(result)
 
-        // }
-        
+    // }
+
 }
 
 usersCltr.update = (req, res) => {
     const id = req.params.id
     const body = req.body
-    console.log('update', body)
+    // console.log('update', body)
     User.findByIdAndUpdate(id, body, { new: true, runValidators: true })
         .then((user) => {
             res.json(user)

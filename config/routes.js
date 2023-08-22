@@ -34,7 +34,7 @@ const upload = multer({
 })
 
 //usersCltr functionalities
-router.get('/scout/list', usersCltr.list)
+router.get('/scout/list', authenticateUser, usersCltr.list)
 router.post('/scout/register', upload.single('profilePicture'), usersCltr.register)
 // testing image on frontend temporary api
 router.get('/scout/image/:id', usersCltr.picture)
@@ -44,10 +44,15 @@ router.get('/scout/show/:id', usersCltr.show)
 router.post('/scout/login', usersCltr.login)
 router.get('/scout/user/account', authenticateUser, usersCltr.account)
 router.put('/scout/user/update', authenticateUser, usersCltr.updateDetails)
-// route to get specific userso for a particualr city
+// route to get specific userso for a particualr city and sport
 router.post('/scout/users/specific', authenticateUser, usersCltr.search)
 router.get('/scout/player/:id', usersCltr.player)
 router.get('/scout/user/login', authenticateUser, usersCltr.currentUser)
+//updating profile picture
+// router.put('/scout/update/profilePicture', upload.single('profilePicture'), authenticateUser, usersCltr.updatePicture)
+router.put('/scout/picture/update',upload.single('profilePicture'), authenticateUser,usersCltr.pictureUpdate)
+//remove an account permanently
+router.delete('/scout/acount/remove',authenticateUser, usersCltr.removeUser)
 
 //cities
 router.post('/scout/cities', citiesCltr.add)
@@ -68,12 +73,17 @@ router.post('/scout/grounds/specific', authenticateUser, groundsCltr.search)
 router.get(`/scout/ground/selected/:id`, groundsCltr.selectedGround)
 //grounds own by a particular user
 router.get('/scout/ground/user', authenticateUser, groundsCltr.usersGround)
-
+//updating the picture of ground
+router.put(`/scout/groundPicture/update/:id`,upload.single('groundPicture'), authenticateUser,groundsCltr.pictureUpdate)
 
 //booking ground
+//booking api
 router.post('/scout/ground/book', authenticateUser, bookingsCltr.book)
+//to check the timeslot
 router.post('/scout/ground/availability', authenticateUser, bookingsCltr.check)
+// list all the bookings
 router.get('/scout/bookings', authenticateUser, bookingsCltr.list)
+//cancel a booking
 router.get('/scout/bookings/cancel/:id', authenticateUser, bookingsCltr.cancel)
 router.get('/scout/bookings/manager', authenticateUser, bookingsCltr.managerList)
 
