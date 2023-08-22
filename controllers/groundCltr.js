@@ -12,6 +12,26 @@ groundsCltr.list = (req, res) => {
         })
 }
 
+groundsCltr.pictureUpdate = (req, res) => {
+    const { id } = req.params
+    Ground.findById(id)
+        .then((ground) => {
+            ground.groundPicture = req.file.filename
+            console.log('ground',ground)
+            Ground.findByIdAndUpdate(id,ground,{new:true,runValidators:true})
+                .then((updatedGround) => {
+                    console.log('updated ground' ,updatedGround)
+                    res.json(updatedGround)
+                })
+                .catch((err) => {
+                    res.json(err)
+                })
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+}
+
 groundsCltr.register = async (req, res) => {
     console.log('ground req',req)
     try {
@@ -82,9 +102,12 @@ groundsCltr.search = (req, res) => {
 }
 
 groundsCltr.delete = (req, res) => {
+    console.log('inside the delete')
     const id = req.params.id
+    console.log('id',id)
     Ground.findByIdAndDelete(id)
         .then((ground) => {
+            console.log(ground)
             res.json(ground)
         })
         .catch((err) => {
