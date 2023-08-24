@@ -19,8 +19,8 @@ configureDB()
 
 //using routes
 app.use(router)
-const port = 3088
+const PORT = process.env.PORT || 3088
 
-app.listen( port , () => {
-    console.log('server running on port: ', port)
+app.listen( PORT , () => {
+    console.log('server running on port: ', PORT)
 })
