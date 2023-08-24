@@ -55,6 +55,7 @@ router.put('/scout/picture/update',upload.single('profilePicture'), authenticate
 router.delete('/scout/acount/remove',authenticateUser, usersCltr.removeUser)
 
 //cities
+// router.get('/test', citiesCltr.test)
 router.post('/scout/cities', citiesCltr.add)
 router.get('/scout/cities/list', citiesCltr.list)
 

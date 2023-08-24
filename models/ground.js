@@ -50,6 +50,6 @@ const groundSchema = new Schema({
     //need to have a reference of the owner/user
 })
 
-const Ground = mongoose.model('Ground', groundSchema)
+const Ground = mongoose.model('ground_scout', groundSchema)
 
 module.exports = Ground
