@@ -1,12 +1,9 @@
 const express = require('express')
-const multer = require('multer')
 const cors = require('cors')
 require('dotenv').config()
 const configureDB = require('./config/configureDatabase')
 const router = require('./config/routes')
-const User = require('./models/users')
 const app = express()
-const path = require('path')
 // const usersCltr = require('./controllers/usersCltr')
 
 app.use(cors())
