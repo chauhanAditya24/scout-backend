@@ -283,6 +283,7 @@ usersCltr.removeUser = (req,res) => {
         })
 }
 
+
 usersCltr.delete = async (req, res) => {
     try{
         const userIdObj = mongoose.Types.ObjectId(req.userId)
