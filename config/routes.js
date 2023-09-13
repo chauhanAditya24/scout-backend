@@ -5,6 +5,7 @@ const groundsCltr = require('../controllers/groundCltr')
 const citiesCltr = require('../controllers/cityCltr')
 const sportsCltr = require('../controllers/sportsCltr')
 const bookingsCltr = require('../controllers/bookingsCltr')
+const adminCltr = require('../controllers/adminCltr')
 const authenticateUser = require('../middlewares/authenticate')
 const multer = require('multer')
 
@@ -87,6 +88,7 @@ router.get('/scout/bookings', authenticateUser, bookingsCltr.list)
 router.get('/scout/bookings/cancel/:id', authenticateUser, bookingsCltr.cancel)
 router.get('/scout/bookings/manager', authenticateUser, bookingsCltr.managerList)
 
-
+//admin routes
+router.get('/admin/view/details/:id', authenticateUser , adminCltr.details)
 
 module.exports = router 
