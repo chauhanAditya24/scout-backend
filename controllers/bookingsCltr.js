@@ -20,20 +20,25 @@ const dateToday = () => {
 
 const bookingCltr = {}
 
+bookingCltr.sessionTest = (req,res) => {
+    console.log('----------session test ------------',req.body)
+}
+
 bookingCltr.book = async (req, res) => {
     try {
         const { body } = req
+        // console.log('bodyyyyyyyy',req.tempBooking)
         const booking = new Booking(body)
         booking.userId = req.userId
         console.log('booking check ', booking)
 
         const data = await Booking.find({ groundId: body.groundId })
         let flag = false
-        console.log('data', data)
+        // console.log('data', data)
 
         data.forEach((ele) => {
             // console.log('date : ', typeof ele.date , typeof body.date, ele.date ,body.date )
-            // console.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
+            // consol`e.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
             if (ele.time === body.time && ele.date === body.date) {
                 // console.log('idk but rue some where')
                 flag = true
@@ -144,7 +149,7 @@ bookingCltr.managerList = async (req, res) => {
                 return booking.date === ans || booking.date > ans
             })
             res.json(result)
-        }
+        }   
         else {
             res.json({ msg: 'no booking done' })
         }
