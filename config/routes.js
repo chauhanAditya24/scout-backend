@@ -7,7 +7,12 @@ const sportsCltr = require('../controllers/sportsCltr')
 const bookingsCltr = require('../controllers/bookingsCltr')
 const adminCltr = require('../controllers/adminCltr')
 const authenticateUser = require('../middlewares/authenticate')
+const bookingStore = require('../middlewares/bookingStore')
 const multer = require('multer')
+
+//express-validator
+const { checkSchema } = require('express-validator')
+const usersValidationSchema = require('../middlewares/usersValidationSchema')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -34,9 +39,14 @@ const upload = multer({
     // fileFilter: fileFilter
 })
 
+//mail confirmation
+router.get('/scout/mail', authenticateUser, usersCltr.mail)
+//payment gateay
+router.post('/scout/create-checkout-session', usersCltr.payment)
+
 //usersCltr functionalities
 router.get('/scout/list', authenticateUser, usersCltr.list)
-router.post('/scout/register', upload.single('profilePicture'), usersCltr.register)
+router.post('/scout/register', upload.single('profilePicture'), checkSchema(usersValidationSchema), usersCltr.register)
 // testing image on frontend temporary api
 router.get('/scout/image/:id', usersCltr.picture)
 router.delete('/scout/remove/:id', usersCltr.delete)
@@ -51,9 +61,13 @@ router.get('/scout/player/:id', usersCltr.player)
 router.get('/scout/user/login', authenticateUser, usersCltr.currentUser)
 //updating profile picture
 // router.put('/scout/update/profilePicture', upload.single('profilePicture'), authenticateUser, usersCltr.updatePicture)
-router.put('/scout/picture/update',upload.single('profilePicture'), authenticateUser,usersCltr.pictureUpdate)
+router.put('/scout/picture/update', upload.single('profilePicture'), authenticateUser, usersCltr.pictureUpdate)
 //remove an account permanently
-router.delete('/scout/acount/remove',authenticateUser, usersCltr.removeUser)
+router.delete('/scout/acount/remove', authenticateUser, usersCltr.removeUser)
+//updating followers
+router.put('/scout/user/followers', authenticateUser, usersCltr.followers)
+//listing followers
+router.get('/scout/list/followers', authenticateUser, usersCltr.listFollowers)
 
 //cities
 router.post('/scout/cities', citiesCltr.add)
@@ -75,7 +89,10 @@ router.get(`/scout/ground/selected/:id`, groundsCltr.selectedGround)
 //grounds own by a particular user
 router.get('/scout/ground/user', authenticateUser, groundsCltr.usersGround)
 //updating the picture of ground
-router.put(`/scout/groundPicture/update/:id`,upload.single('groundPicture'), authenticateUser,groundsCltr.pictureUpdate)
+router.put(`/scout/groundPicture/update/:id`, upload.single('groundPicture'), authenticateUser, groundsCltr.pictureUpdate)
+
+// session test
+router.post('/scout/session',bookingStore ,bookingsCltr.sessionTest)
 
 //booking ground
 //booking api
@@ -89,6 +106,9 @@ router.get('/scout/bookings/cancel/:id', authenticateUser, bookingsCltr.cancel)
 router.get('/scout/bookings/manager', authenticateUser, bookingsCltr.managerList)
 
 //admin routes
-router.get('/admin/view/details/:id', authenticateUser , adminCltr.details)
+router.get('/admin/view/details/:id', authenticateUser, adminCltr.details)
+
+router.get('/scout/findingUser/:id', authenticateUser, usersCltr.specificUsers)
+
 
 module.exports = router 

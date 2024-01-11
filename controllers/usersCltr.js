@@ -4,11 +4,150 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const Ground = require('../models/ground')
 const Booking = require('../models/booking')
+const { validationResult } = require('express-validator')
+// const stripe = require('stripe')('sk_test_51OPQrWSCsP2MbOhTp6SxnDg2GiBkkiglV1UidggfOhk4J6m84YlNH5ddsNGh5rCj4XMjZ5M0d1RBnqTu3KQ5z8GV001NXhKA6c',{
+//     apiVersion : '2023-08-16'
+// })
+const stripe = require('stripe')('sk_test_51OPQrWSCsP2MbOhTp6SxnDg2GiBkkiglV1UidggfOhk4J6m84YlNH5ddsNGh5rCj4XMjZ5M0d1RBnqTu3KQ5z8GV001NXhKA6c', {
+    apiVersion: '2022-08-01'
+})
+
+const nodemailer = require('nodemailer')
 
 usersCltr = {}
 
-//listing all the users
+
+// usersCltr.webhooks = async (req,res) => {
+//     try{
+
+//     }
+//     catch(err){
+//         res.json(err)
+//     }
+// }
+
+//nodemailer
+
+usersCltr.mail = async (req, res) => {
+    try {
+        // const user = await User.findById(req.userId)
+        // console.log('***** MAIL *****')
+        // console.log(user)
+
+        // const email = user.email
+
+        // ethreal email temp 
+        // const transporter = nodemailer.createTransport({
+        //     host: 'smtp.ethereal.email',
+        //     port: 587,
+        //     auth: {
+        //         user: 'ned52@ethereal.email',
+        //         pass: '1drKmg7NGErVugcJWD'
+        //     }
+        // });
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            auth: {
+                user: 'scoutofficial24@gmail.com',
+                pass: 'kqoa pinl bgrh uglb'
+            },
+        })
+
+        // console.log('transporter' , transporter)
+
+        // const mail = {
+        //         from: '"Scout Official 👻" <scoutofficial24@gmail.com>', // sender address
+        //         to: "adityachauhan2408@gmail.com", // list of receivers
+        //         subject: "Booking", // Subject line
+        //         text: "Your booking is confirmed.", // plain text body
+        //         html: "<b>Your booking is confirmed.</b>", // html body
+        //       }
+
+        // const sendMail = async(transporter,mail) => {
+        //     try{
+        //         await transporter.sendMail(mail)
+        //         console.log('mail has been sent successfully')
+        //     }
+        //     catch(e){
+        //         console.log(e)
+        //     }
+        // }
+
+        const info = await transporter.sendMail({
+            from: '"Scout Official 👻" <scoutofficial24@gmail.com>', // sender address
+            to: "adityachauhan2408@gmail.com", // list of receivers
+            subject: "Booking", // Subject line
+            text: "Your booking is confirmed.", // plain text body
+            html: "<b>Your booking is confirmed.</b>", // html body
+        });
+
+        //   console.log('info' , info)
+
+        res.json(info)
+    }
+    catch (err) {
+        res.json(err)
+    }
+}
+
+//payment gateway
+usersCltr.payment = async (req, res) => {
+    console.log('payment gateway', req.body)
+    const booking = req.body
+
+    const lineItems = [booking].map((ele) => ({
+        price_data: {
+            currency: 'inr',
+            product_data: {
+                name: ele.name
+            },
+            unit_amount: ele.price * 100
+        },
+        // price:ele.price,
+        quantity: 1,
+        // description:ele.time
+    }))
+
+    const isINR = lineItems[0].price_data.currency.toLowerCase() === 'inr'
+
+    // const lineItems = [
+    //     {
+    //         name:`${booking.name}`,
+    //         description:`Time - ${booking.time} , Date - ${booking.date}  `,
+    //         amount:`${Number(booking.price)}`,
+    //         currency:'inr',
+    //     }
+    // ]
+
+    // const tokenData = req.body
+    // const token = jwt.sign(tokenData, process.env.JWT_SECRET)
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: 'http://localhost:3000/payment/success',
+        cancel_url: 'http://localhost:3000/payment/cancel',
+        customer_email: 'testuser2@gmail.com',
+        // billing_address_collection:'required',
+        billing_address_collection: isINR ? 'required' : 'auto',
+        shipping_address_collection: {
+            allowed_countries: []
+        }
+        // shipping_address_collection: {
+        //     allowed_countries: isINR ? [] : [], // Set allowed countries based on the currency
+        // }
+    })
+    console.log('session object', session)
+    res.json({ id: session.id })
+}
+
+// listing all the users
 usersCltr.list = (req, res) => {
+    // const errors = validationResult(req)
+
     User.find()
         .then((users) => {
 
@@ -21,6 +160,117 @@ usersCltr.list = (req, res) => {
         })
         .catch((err) => {
             res.json(err)
+        })
+}
+
+usersCltr.listFollowers = (req, res) => {
+    User.findById(req.userId)
+        .then((res) => {
+            const data = res.followers
+            res.json(data)
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+}
+
+//handle followers
+usersCltr.followers = (req, res) => {
+    console.log('followers', req.body)
+    const data = req.body
+    console.log('data [0]', data[0])
+    console.log('data followers', data)
+
+    User.findById(req.userId)
+        .then((currUser) => {
+            const name = currUser.username
+            User.findById(data.id)
+                .then((user) => {
+                    const arr = [...user.followers]
+                    arr.push(name)
+                    user.followers = arr
+
+                    User.findByIdAndUpdate(data.id, user, { new: true, runValidators: true })
+                        .then((updatedUser) => {
+                            console.log('updated user check', updatedUser)
+                            res.json(updatedUser.followers)
+                        })
+                        .catch((err) => {
+                            res.json(err)
+                        })
+
+
+                })
+                .catch((err) => {
+                    res.json(err)
+                })
+        })
+        .catch((err) => {
+            res.json(err)
+        })
+
+    // User.findById(data.id)
+    //     .then((user) => {
+    //         const arr = [...user.followers]
+    //         User.findById(req.userId)
+    //             .then((currUser) => {
+    //                 arr.push(currUser.username)
+    //             })
+    //             .catch((err) => {
+    //                 res.json(err)
+    //             })
+
+    //     })
+    //     .catch((err) => {
+    //         res.json(err)
+    //     })
+
+    // User.findById(req.userId)
+    //     .then((user) => {
+    //         const arr = [...user.followers]
+    //         arr.push(data[data.length-1])
+    //         user.followers = arr
+    //         User.findByIdAndUpdate(req.userId , user, {new:true,runValidators:true})
+    //             .then((updatedUser) => {
+    //                 console.log('updated user',updatedUser)
+    //                 res.json(updatedUser.followers)
+    //             })
+    //             .catch((err) => {
+    //                 res.json(err)
+    //             })
+    //     })
+    //     .catch((err) => {
+    //         res.json(err)
+    //     })
+
+    // User.findById(req.userId)
+    //     .then((user) => {
+    //         console.log('user follower' , user.followers)
+    //         const follower = user.followers
+    //         follower.push(req.body.name)
+    //         console.log('follower', follower)
+    //         user.followers = [...follower]
+    //         res.json(user)
+    //     })
+    //     .catch((err) => {
+    //         res.json(err)
+    //     })    
+}
+
+
+//this was for the react full calender
+
+usersCltr.specificUsers = (req, res) => {
+    console.log('specific user')
+    const { id } = req.params
+    console.log('request object from the specificusers', id)
+    User.findById(id)
+        .then((user) => {
+            // console.log('found the user',user)
+            res.json(user)
+        })
+        .catch((err) => {
+            console.log(err)
         })
 }
 
@@ -84,6 +334,15 @@ usersCltr.pictureUpdate = (req, res) => {
 // }
 
 usersCltr.register = async (req, res) => {
+    //validation errors
+    const errors = validationResult(req)
+    console.log('validation errors', errors)
+    // console.log('errors in the register' , errors)
+    // console.log('errors in the is empty' , errors.isEmpty())
+    console.log('req.file', req.file)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
+    }
 
     // console.log('req file ', req.file)
     try {
@@ -217,7 +476,7 @@ usersCltr.player = (req, res) => {
         })
 }
 
-usersCltr.removePlayer = (req,res) => {
+usersCltr.removePlayer = (req, res) => {
     const userIdObj = new mongoose.Types.ObjectId(req.userId)
     const obj = {}
     const error = {}
@@ -231,8 +490,8 @@ usersCltr.removePlayer = (req,res) => {
                 .catch((err) => {
                     error.user = err
                 })
-            
-            Booking.deleteMany({userId: req.userId})
+
+            Booking.deleteMany({ userId: req.userId })
                 .then((booking) => {
                     obj.booking = booking
                 })
@@ -245,19 +504,19 @@ usersCltr.removePlayer = (req,res) => {
         .catch((err) => {
             res.json(err)
         })
-} 
+}
 
-usersCltr.removeUser = (req,res) => {
+usersCltr.removeUser = (req, res) => {
     const userIdObj = new mongoose.Types.ObjectId(req.userId)
     console.log(userIdObj)
 
-    const obj ={}
-    const error ={}
+    const obj = {}
+    const error = {}
     User.findByIdAndDelete(req.userId)
         .then((user) => {
             // res.json(user)
             obj.user = user
-            Ground.deleteMany({userId: req.userId})
+            Ground.deleteMany({ userId: req.userId })
                 .then((grounds) => {
                     obj.grounds = grounds
                     // res.json(grounds)
@@ -266,7 +525,7 @@ usersCltr.removeUser = (req,res) => {
                     error.ground = err
                     // res.json(error)
                 })
-            Booking.deleteMany({managerId:req.userId})
+            Booking.deleteMany({ managerId: req.userId })
                 .then((booking) => {
                     obj.booking = booking
                 })
@@ -285,19 +544,19 @@ usersCltr.removeUser = (req,res) => {
 
 
 usersCltr.delete = async (req, res) => {
-    try{
+    try {
         const userIdObj = mongoose.Types.ObjectId(req.userId)
         console.log(userIdObj)
         const user = await User.findById(req.userId)
         console.log(user._id.toString())
         console.log(req.userId)
-        const ground = await Ground.findBy({userId: userIdObj})
+        const ground = await Ground.findBy({ userId: userIdObj })
         console.log(ground)
         res.json({
-            'msg':'reaching'
+            'msg': 'reaching'
         })
     }
-    catch(err){
+    catch (err) {
         res.json(err)
     }
 

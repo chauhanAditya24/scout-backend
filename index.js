@@ -7,6 +7,7 @@ const router = require('./config/routes')
 const User = require('./models/users')
 const app = express()
 const path = require('path')
+const nodeCron = require('./middlewares/cron')
 // const usersCltr = require('./controllers/usersCltr')
 
 app.use(cors())
@@ -16,6 +17,9 @@ app.use(express.urlencoded({ extended: false }))
 
 //connecting to database
 configureDB()
+
+// running cron job
+nodeCron()
 
 //using routes
 app.use(router)
