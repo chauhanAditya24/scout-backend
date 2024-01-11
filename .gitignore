@@ -1,4 +1,7 @@
-public
+/public/images
+
 /node_modules
+
 code.txt
+
 .env

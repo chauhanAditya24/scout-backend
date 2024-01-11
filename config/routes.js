@@ -70,6 +70,7 @@ router.put('/scout/user/followers', authenticateUser, usersCltr.followers)
 router.get('/scout/list/followers', authenticateUser, usersCltr.listFollowers)
 
 //cities
+// router.get('/test', citiesCltr.test)
 router.post('/scout/cities', citiesCltr.add)
 router.get('/scout/cities/list', citiesCltr.list)
 
