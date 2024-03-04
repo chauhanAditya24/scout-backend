@@ -1,4 +1,5 @@
 const Booking = require('../models/booking')
+const { validationResult } = require('express-validator')
 
 const dateToday = () => {
 
@@ -20,99 +21,112 @@ const dateToday = () => {
 
 const bookingCltr = {}
 
-bookingCltr.sessionTest = (req,res) => {
-    console.log('----------session test ------------',req.body)
+bookingCltr.sessionTest = (req, res) => {
+    console.log('----------session test ------------', req.body)
 }
 
 bookingCltr.book = async (req, res) => {
-    try {
-        const { body } = req
-        // console.log('bodyyyyyyyy',req.tempBooking)
-        const booking = new Booking(body)
-        booking.userId = req.userId
-        console.log('booking check ', booking)
+    const errors = validationResult(req)
 
-        const data = await Booking.find({ groundId: body.groundId })
-        let flag = false
-        // console.log('data', data)
+    if (!errors.isEmpty()) {
+        res.json({ errors: errors.array() })
+    } else {
+        try {
+            const { body } = req
+            // console.log('bodyyyyyyyy',req.tempBooking)
+            const booking = new Booking(body)
+            booking.userId = req.userId
+            console.log('booking check ', booking)
 
-        data.forEach((ele) => {
-            // console.log('date : ', typeof ele.date , typeof body.date, ele.date ,body.date )
-            // consol`e.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
-            if (ele.time === body.time && ele.date === body.date) {
-                // console.log('idk but rue some where')
-                flag = true
-            }
-        })
-
-        if (flag) {
-            res.json({ msg: 'not available' })
-        } else {
-            const databack = await booking.save()
-            console.log('databack', databack)
-            res.json(databack)
-        }
-
-
-    }
-    catch (e) {
-        res.json(e)
-    }
-
-}
-
-
-bookingCltr.check = async (req, res) => {
-    try {
-        const { body } = req
-        console.log('body ', body)
-
-        const startTime2 = body.time.split('-')[0]
-        const endTime2 = body.time.split('-')[1]
-
-        const data = await Booking.find({ groundId: body.groundId })
-        console.log(' time 2 ', data)
-
-        // const startTime1 = data.time.split('-')[0]
-        // const endTime1 = data.time.split('-')[1]
-
-        if (data) {
+            const data = await Booking.find({ groundId: body.groundId })
             let flag = false
+            // console.log('data', data)
+
             data.forEach((ele) => {
                 // console.log('date : ', typeof ele.date , typeof body.date, ele.date ,body.date )
-                // console.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
-                // if (ele.time === body.time && ele.date === body.date) {
-                //     flag = true
-                // }
-
-                if (ele.date === body.date) {
-
-                    const startTime1 = ele.time.split('-')[0]
-                    const endTime1 = ele.time.split('-')[1]         
-                               
-                    if ((startTime1 === startTime2 && endTime1 === endTime2) || (startTime1 > startTime2 && endTime1 === endTime2) || (startTime1 === startTime2 && endTime1 < endTime2) || (startTime2 > startTime1 && startTime2 < endTime1) || (startTime1 > startTime2 && endTime1 < endTime2) || (startTime1 < endTime2 && endTime1 > endTime2)) {
-                        // console.log('slot is not avaiable')
-                        flag = true
-                    } //else {
-                        //console.log('slot is avaiable')
-                    //}
+                // consol`e.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
+                if (ele.time === body.time && ele.date === body.date) {
+                    // console.log('idk but rue some where')
+                    flag = true
                 }
             })
 
             if (flag) {
                 res.json({ msg: 'not available' })
             } else {
-                res.json({ msg: 'available' })
+                const databack = await booking.save()
+                console.log('databack', databack)
+                res.json(databack)
             }
 
-        } else {
-            res.json({ msg: 'inside else' })
-        }
 
-    } catch (err) {
-        res.json(err)
+        }
+        catch (e) {
+            res.json(e)
+        }
     }
 
+}
+
+
+bookingCltr.check = async (req, res) => {
+
+    const errors = validationResult(req)
+
+    if(!errors.isEmpty()){
+        res.json({errors:errors.array()})
+    }else{
+        try {
+            const { body } = req
+            console.log('body ', body)
+    
+            const startTime2 = body.time.split('-')[0]
+            const endTime2 = body.time.split('-')[1]
+    
+            const data = await Booking.find({ groundId: body.groundId })
+            console.log(' time 2 ', data)
+    
+            // const startTime1 = data.time.split('-')[0]
+            // const endTime1 = data.time.split('-')[1]
+    
+            if (data) {
+                let flag = false
+                data.forEach((ele) => {
+                    // console.log('date : ', typeof ele.date , typeof body.date, ele.date ,body.date )
+                    // console.log('time : ', typeof ele.time , typeof body.time,ele.time, body.time )
+                    // if (ele.time === body.time && ele.date === body.date) {
+                    //     flag = true
+                    // }
+    
+                    if (ele.date === body.date) {
+    
+                        const startTime1 = ele.time.split('-')[0]
+                        const endTime1 = ele.time.split('-')[1]
+    
+                        if ((startTime1 === startTime2 && endTime1 === endTime2) || (startTime1 > startTime2 && endTime1 === endTime2) || (startTime1 === startTime2 && endTime1 < endTime2) || (startTime2 > startTime1 && startTime2 < endTime1) || (startTime1 > startTime2 && endTime1 < endTime2) || (startTime1 < endTime2 && endTime1 > endTime2)) {
+                            // console.log('slot is not avaiable')
+                            flag = true
+                        } //else {
+                        //console.log('slot is avaiable')
+                        //}
+                    }
+                })
+    
+                if (flag) {
+                    res.json({ msg: 'not available' })
+                } else {
+                    res.json({ msg: 'available' })
+                }
+    
+            } else {
+                res.json({ msg: 'inside else' })
+            }
+    
+        } catch (err) {
+            res.json(err)
+        }
+    
+    }
 }
 
 bookingCltr.list = async (req, res) => {
@@ -149,7 +163,7 @@ bookingCltr.managerList = async (req, res) => {
                 return booking.date === ans || booking.date > ans
             })
             res.json(result)
-        }   
+        }
         else {
             res.json({ msg: 'no booking done' })
         }

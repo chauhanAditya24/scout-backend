@@ -1,11 +1,20 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
+
+// const sportsSchema = new Schema({
+//     name:{
+//         type:String
+//     },
+// })
+
 const sportsSchema = new Schema({
     name:{
         type: String,
         unique:true,
-        required: true
+        required: ['name is required',true],
+        minlength:4,
+        maxlength:20
     }
 })
 

@@ -94,55 +94,78 @@ usersCltr.mail = async (req, res) => {
 
 //payment gateway
 usersCltr.payment = async (req, res) => {
-    console.log('payment gateway', req.body)
-    const booking = req.body
-
-    const lineItems = [booking].map((ele) => ({
-        price_data: {
-            currency: 'inr',
-            product_data: {
-                name: ele.name
+    // console.log('payment gateway', req.body)
+    try {
+        const booking = req.body
+        // const usern = await User.findById(req.userId)
+        // console.log(' userName to find' , req.userId)
+        const lineItems = [booking].map((ele) => ({
+            price_data: {
+                currency: 'inr',
+                product_data: {
+                    name: ele.name
+                },
+                unit_amount: ele.price * 100
             },
-            unit_amount: ele.price * 100
-        },
-        // price:ele.price,
-        quantity: 1,
-        // description:ele.time
-    }))
+            // price:ele.price,
+            quantity: 1,
+            // description:ele.time
+        }))
 
-    const isINR = lineItems[0].price_data.currency.toLowerCase() === 'inr'
+        const isINR = lineItems[0].price_data.currency.toLowerCase() === 'inr'
 
-    // const lineItems = [
-    //     {
-    //         name:`${booking.name}`,
-    //         description:`Time - ${booking.time} , Date - ${booking.date}  `,
-    //         amount:`${Number(booking.price)}`,
-    //         currency:'inr',
-    //     }
-    // ]
+        // const lineItems = [
+        //     {
+        //         name:`${booking.name}`,
+        //         description:`Time - ${booking.time} , Date - ${booking.date}  `,
+        //         amount:`${Number(booking.price)}`,
+        //         currency:'inr',
+        //     }
+        // ]
 
-    // const tokenData = req.body
-    // const token = jwt.sign(tokenData, process.env.JWT_SECRET)
+        // const tokenData = req.body
+        // const token = jwt.sign(tokenData, process.env.JWT_SECRET)
 
-    const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: lineItems,
-        mode: 'payment',
-        success_url: 'http://localhost:3000/payment/success',
-        cancel_url: 'http://localhost:3000/payment/cancel',
-        customer_email: 'testuser2@gmail.com',
-        // billing_address_collection:'required',
-        billing_address_collection: isINR ? 'required' : 'auto',
-        shipping_address_collection: {
-            allowed_countries: []
-        }
-        // shipping_address_collection: {
-        //     allowed_countries: isINR ? [] : [], // Set allowed countries based on the currency
-        // }
-    })
-    console.log('session object', session)
-    res.json({ id: session.id })
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: lineItems,
+            mode: 'payment',
+            success_url: 'http://localhost:3000/payment/success',
+            cancel_url: 'http://localhost:3000/payment/cancel',
+            // customer_email: 'testuser2@gmail.com',
+            // billing_address_collection:'required',
+            billing_address_collection: isINR ? 'required' : 'auto',
+            shipping_address_collection: {
+                allowed_countries: []
+            },
+
+
+            //adding meta data to retrive
+            // metadata: {
+            //     bookingData: JSON.stringify(booking)
+            // },
+
+
+            // shipping_address_collection: {
+            //     allowed_countries: isINR ? [] : [], // Set allowed countries based on the currency
+            // }
+        })
+        // console.log('session object', session)
+        res.json({ id: session.id })
+    }
+    catch (err) {
+        // console.log('error creating the checkout session', error)
+        res.json({ error: 'failed to create checkout session' })
+    }
 }
+
+//
+// Endpoint to retrieve booking data using the session ID
+
+
+
+
+//
 
 // listing all the users
 usersCltr.list = (req, res) => {
@@ -163,51 +186,204 @@ usersCltr.list = (req, res) => {
         })
 }
 
+//following a person
+usersCltr.listFollowing = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId)
+        // conosle.log(' user to find ')
+        res.json(user.following)
+        // res.json(user)
+    }
+    catch (err) {
+        res.jso(err)
+    }
+}
+
+usersCltr.addFollowing = async (req, res) => {
+    try {
+        const data = req.body
+        console.log('addd following ', data)
+        const user = await User.findById(req.userId)
+        const isAlreadyInList = user.following.some((ele) => {
+            return ele.id === data.id
+        })
+        if (isAlreadyInList) {
+            res.json({ message: 'user already there' })
+        } else {
+
+            const updatedFollowing = [...user.following, data]
+            const updatedUser = await User.findByIdAndUpdate(req.userId, { following: updatedFollowing }, { new: true, runValidators: true })
+            res.json(updatedUser.following)
+        }
+    }
+    catch (err) {
+        res.json(err)
+    }
+}
+
+usersCltr.removeFollowing = async (req, res) => {
+    try {
+        const data = req.body
+        const user = await User.findById(req.userId)
+        // res.json(user.following)
+        const updatedFollowing = user.following.filter((ele) => {
+            return ele.id !== data.idToRemove
+        })
+
+        const updatedUser = await User.findByIdAndUpdate(req.userId, { following: updatedFollowing }, { new: true, runValidators: true })
+        // res.json(updatedUser.following)
+        res.json({ message: 'success', updatedFollowing: updatedUser.following })
+
+    }
+    catch (err) {
+        res.json(err)
+    }
+}
+
+
 usersCltr.listFollowers = (req, res) => {
+    // console.log('req.userId' , req.userId)
     User.findById(req.userId)
-        .then((res) => {
-            const data = res.followers
-            res.json(data)
+        .then((user) => {
+            // const data = res
+            // console.log('current users data', user)
+            res.json(user.followers)
+            // console.log('followers : ', data)
+            // res.json({followers:data})
+            // res.json('end')
+            // res.json()
+            // res.json({msg:'error'})
         })
         .catch((err) => {
             res.json(err)
         })
 }
 
+//new handle users followers
+
+usersCltr.followers = async (req, res) => {
+    try {
+        const data = req.body
+        const currUser = await User.findById(req.userId)
+        const name = { id: req.userId, username: currUser.username }
+
+        const user = await User.findById(data.id)
+        const isAlreadyFollowing = user.followers.some((follower) => {
+            return follower.id === name.id
+        })
+
+        if (isAlreadyFollowing) {
+            res.json({ message: 'Already folloing' })
+        } else {
+            const updatedFollowers = [...user.followers, name]
+            const updatedUser = await User.findByIdAndUpdate(data.id, { followers: updatedFollowers }, { new: true, runValidators: true })
+            // console.log(' updated followers to check ------------------> ', updatedUser.followers)
+            res.json({ message: 'success' })
+        }
+    }
+    catch (e) {
+        res.json(e)
+    }
+}
+
+usersCltr.removeFollowers = async (req, res) => {
+    try {
+        const body = req.body;
+        const user = await User.findById(req.userId);
+        console.log('users followers:', user.followers);
+
+        // Filter out the follower to remove
+        const updatedFollowers = user.followers.filter((follower) => follower.id !== body.idToRemove);
+        console.log('updated followers:', updatedFollowers);
+
+        // Update the user with the new followers list
+        const updatedUser = await User.findByIdAndUpdate(req.userId, { followers: updatedFollowers }, { new: true, runValidators: true });
+
+        console.log('updatedUser:', updatedUser);
+
+        res.json({ message: 'success', updatedFollowers: updatedUser.followers });
+    } catch (error) {
+        console.error('Error removing follower:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+
+// usersCltr.removeFollowers = async (req, res) => {
+//     // console.log('')
+//     try {
+//         const body = req.body
+//         const user = await User.findById(req.userId)
+//         console.log('users folowers', user.followers)
+//         const updatedFollowers = user.followers.filter((ele) => {
+//             return ele.id !== body.idToRemove
+//         })
+//         console.log('user to fdin ', updatedFollowers)
+//         const updatedUser = await User.findByIdAndUpdate(req.userId, { followers: updatedFollowers }, { new: true, runValidators: true })
+//         // console.log('body inside the remove followers ' , req.body)
+//         conosle.log('updatedUser ----------> ', updatedUser)
+//         res.json({ message: 'success', updatedFollowers: updatedUser.followers })
+//     }
+//     catch (e) {
+//         res.json(e)
+//     }
+// }
+
+
 //handle followers
-usersCltr.followers = (req, res) => {
-    console.log('followers', req.body)
+usersCltr.oldfollowers = async (req, res) => {
+    // console.log('followers', req.body)
     const data = req.body
-    console.log('data [0]', data[0])
-    console.log('data followers', data)
+    // console.log('data [0]', data[0])
+    // console.log('data followers', data)
+    console.log("inside the user followers module ")
 
-    User.findById(req.userId)
-        .then((currUser) => {
-            const name = currUser.username
-            User.findById(data.id)
-                .then((user) => {
-                    const arr = [...user.followers]
-                    arr.push(name)
-                    user.followers = arr
+    try {
+        User.findById(req.userId)
+            .then((currUser) => {
+                const name = { id: req.userId, username: currUser.username }
+                // console.log('followers details', currUser)
+                User.findById(data.id)
+                    .then((user) => {
+                        const len = user.followers.length
+                        if (len !== 0) {
+                            for (let i = 0; i < len; ++i) {
+                                if (user.followers[i].id === name.id) {
+                                    // console.log('---------------------------------------------already following')
+                                    res.json({ message: 'Already following' })
+                                }
+                            }
+                        } else {
+                            const arr = [...user.followers]
+                            arr.push(name)
+                            user.followers = arr
 
-                    User.findByIdAndUpdate(data.id, user, { new: true, runValidators: true })
-                        .then((updatedUser) => {
-                            console.log('updated user check', updatedUser)
-                            res.json(updatedUser.followers)
-                        })
-                        .catch((err) => {
-                            res.json(err)
-                        })
+                            User.findByIdAndUpdate(data.id, user, { new: true, runValidators: true })
+                                .then((updatedUser) => {
+                                    // console.log('updated user check', updatedUser)
+                                    // res.json(updatedUser.followers)
+                                    const obj = { message: 'success' }
+                                    res.json(obj)
+                                })
+                                .catch((err) => {
+                                    res.json(err)
+                                })
 
 
-                })
-                .catch((err) => {
-                    res.json(err)
-                })
-        })
-        .catch((err) => {
-            res.json(err)
-        })
+                        }
+                    })
+                    .catch((err) => {
+                        res.json(err)
+                    })
+            })
+            .catch((err) => {
+                res.json(err)
+            })
+    }
+    catch (e) {
+        res.json(e)
+    }
 
     // User.findById(data.id)
     //     .then((user) => {
@@ -261,9 +437,9 @@ usersCltr.followers = (req, res) => {
 //this was for the react full calender
 
 usersCltr.specificUsers = (req, res) => {
-    console.log('specific user')
+    // console.log('specific user')
     const { id } = req.params
-    console.log('request object from the specificusers', id)
+    // console.log('request object from the specificusers', id)
     User.findById(id)
         .then((user) => {
             // console.log('found the user',user)
@@ -302,7 +478,7 @@ usersCltr.pictureUpdate = (req, res) => {
             // console.log('user check',user)
             User.findByIdAndUpdate(req.userId, user, { new: true, runValidators: true })
                 .then((userUpdated) => {
-                    console.log('updated user', userUpdated)
+                    // console.log('updated user', userUpdated)
                     res.json(userUpdated)
                 })
                 .catch((err) => {
@@ -336,54 +512,55 @@ usersCltr.pictureUpdate = (req, res) => {
 usersCltr.register = async (req, res) => {
     //validation errors
     const errors = validationResult(req)
-    console.log('validation errors', errors)
+    // console.log('validation errors', errors)
     // console.log('errors in the register' , errors)
     // console.log('errors in the is empty' , errors.isEmpty())
-    console.log('req.file', req.file)
+    // console.log('req.file', req.file)
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() })
+        res.json({ errors: errors.array() })
     }
+    else {
+        // console.log('req file ', req.file)
+        try {
+            const body = req.body
+            const file = req.file
+            // console.log('body = ', body)
+            // console.log('file = ', file.destination + '/' + file.filename)
+            // res.json({error: 'successfullt submitted the user'})
+            const userObj = new User({
+                username: body.username,
+                email: body.email,
+                phone: body.phone,
+                password: body.password,
+                city: body.city,
+                sport: body.sport,
+                profilePicture: file.filename,
+                role: body.role,
+                bio: body.bio
+                // profilePicture: file.destination + '/' + file.filename
+            })
 
-    // console.log('req file ', req.file)
-    try {
-        const body = req.body
-        const file = req.file
-        // console.log('body = ', body)
-        // console.log('file = ', file.destination + '/' + file.filename)
-        // res.json({error: 'successfullt submitted the user'})
-        const userObj = new User({
-            username: body.username,
-            email: body.email,
-            phone: body.phone,
-            password: body.password,
-            city: body.city,
-            sport: body.sport,
-            profilePicture: file.filename,
-            role: body.role,
-            bio: body.bio
-            // profilePicture: file.destination + '/' + file.filename
-        })
+            // checking if the user already exist or not
+            const userCheckEmail = await User.findOne({ email: userObj.email })
+            const userCheckPhone = await User.findOne({ phone: userObj.phone })
 
-        // checking if the user already exist or not
-        const userCheckEmail = await User.findOne({ email: userObj.email })
-        const userCheckPhone = await User.findOne({ phone: userObj.phone })
+            if (userCheckEmail && userCheckPhone) {
+                res.json({ error: 'user already exist with this email/phone please login' })
+            } else if (userCheckEmail) {
+                res.json({ error: 'user already exist with this email/phone please login' })
+            } else if (userCheckPhone) {
+                res.json({ error: 'user already exist with this email/phone please login' })
+            } else {
+                const salt = await bcrypt.genSalt()
+                const hashPassword = await bcrypt.hash(userObj.password, salt)
+                userObj.password = hashPassword
 
-        if (userCheckEmail && userCheckPhone) {
-            res.json({ error: 'user already exist with this email/phone please login' })
-        } else if (userCheckEmail) {
-            res.json({ error: 'user already exist with this email/phone please login' })
-        } else if (userCheckPhone) {
-            res.json({ error: 'user already exist with this email/phone please login' })
-        } else {
-            const salt = await bcrypt.genSalt()
-            const hashPassword = await bcrypt.hash(userObj.password, salt)
-            userObj.password = hashPassword
-
-            const user = await userObj.save()
-            res.json(user)
+                const user = await userObj.save()
+                res.json(user)
+            }
+        } catch (e) {
+            res.json(e)
         }
-    } catch (e) {
-        res.json(e)
     }
 }
 
@@ -508,7 +685,7 @@ usersCltr.removePlayer = (req, res) => {
 
 usersCltr.removeUser = (req, res) => {
     const userIdObj = new mongoose.Types.ObjectId(req.userId)
-    console.log(userIdObj)
+    // console.log(userIdObj)
 
     const obj = {}
     const error = {}
@@ -546,12 +723,12 @@ usersCltr.removeUser = (req, res) => {
 usersCltr.delete = async (req, res) => {
     try {
         const userIdObj = mongoose.Types.ObjectId(req.userId)
-        console.log(userIdObj)
+        // console.log(userIdObj)
         const user = await User.findById(req.userId)
-        console.log(user._id.toString())
-        console.log(req.userId)
+        // console.log(user._id.toString())
+        // console.log(req.userId)
         const ground = await Ground.findBy({ userId: userIdObj })
-        console.log(ground)
+        // console.log(ground)
         res.json({
             'msg': 'reaching'
         })
@@ -573,16 +750,23 @@ usersCltr.delete = async (req, res) => {
 
 
 usersCltr.updateDetails = (req, res) => {
-    const { body } = req
 
-    User.findByIdAndUpdate(req.userId, body, { new: true, runValidators: true })
-        .then((user) => {
-            res.json(user)
-        })
-        .catch((err) => {
-            res.json(err)
-        })
+    const errors = validationResult(req)
 
+    if (!errors.isEmpty()) {
+        res.json({ errors: errors.array() })
+    } else {
+        const { body } = req
+
+        User.findByIdAndUpdate(req.userId, body, { new: true, runValidators: true })
+            .then((user) => {
+                res.json(user)
+            })
+            .catch((err) => {
+                res.json(err)
+            })
+
+    }
 
     // const objectUser = new User(body)
     // console.log('body', body)
