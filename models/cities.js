@@ -5,7 +5,9 @@ const citySchema = new Schema({
     city:{
         type:String,
         unique: true,
-        required: true
+        required: ['city name is required' , true],
+        minlength:4,
+        maxlength:22
     }
 })
 
