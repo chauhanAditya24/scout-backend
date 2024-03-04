@@ -11,6 +11,6 @@ const citySchema = new Schema({
     }
 })
 
-const City = mongoose.model('City', citySchema)
+const City = mongoose.model('city_scout', citySchema)
 
 module.exports = City

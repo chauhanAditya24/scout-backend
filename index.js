@@ -24,10 +24,10 @@ nodeCron()
 //using routes
 app.use(router)
 
-const port = 3088
+const PORT = process.env.PORT || 3088
 
-const server = app.listen(port, () => {
-    console.log('server running on port: ', port)
+const server = app.listen(PORT, () => {
+    console.log('server running on port: ', PORT)
 })
 
 const io = require('socket.io')(server, {

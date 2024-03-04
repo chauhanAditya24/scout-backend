@@ -101,6 +101,7 @@ router.put('/scout/remove/following', authenticateUser , usersCltr.removeFollowi
 
 
 //cities
+// router.get('/test', citiesCltr.test)
 router.post('/scout/cities', citiesValidationSchema, citiesCltr.add)
 router.get('/scout/cities/list', citiesCltr.list)
 

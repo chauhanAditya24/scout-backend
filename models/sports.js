@@ -18,6 +18,6 @@ const sportsSchema = new Schema({
     }
 })
 
-const Sport = mongoose.model('Sport' , sportsSchema)
+const Sport = mongoose.model('sports_scout' , sportsSchema)
 
 module.exports = Sport

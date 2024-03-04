@@ -34,6 +34,37 @@ const Schema = mongoose.Schema
 // })
 
 
+// const usersSchema = new Schema({
+//     username: {
+//         type: String
+//     },
+//     email: {
+//         type: String
+//     },
+//     phone: {
+//         type: String
+//     },
+//     password: {
+//         type: String
+//     },
+//     profilePicture: {
+//         type: String
+//     },
+//     city: {
+//         type: String
+//     },
+//     role: {
+//         type: String
+//     },
+//     bio: {
+//         type: String
+//     },
+//     followers: {
+//         type: Array
+//     }
+// })
+
+
 
 const usersSchema = new Schema({
     username: {
