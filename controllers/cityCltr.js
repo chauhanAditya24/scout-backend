@@ -1,6 +1,7 @@
 const City = require('../models/cities')
 const { validationResult } = require('express-validator')
 
+
 const citiesCltr = {}
 
 citiesCltr.add = (req, res) => {
