@@ -23,7 +23,6 @@ cloudinary.config({
 
 usersCltr = {}
 
-
 // usersCltr.webhooks = async (req,res) => {
 //     try{
 
