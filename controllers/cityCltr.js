@@ -46,7 +46,7 @@ citiesCltr.list = ( req , res ) => {
     // console.log('inside the city')
     City.find()
         .then((cities) => {
-            console.log('city' , cities)
+            // console.log('city' , cities)
             res.json(cities)
         })
         .catch((err) => {

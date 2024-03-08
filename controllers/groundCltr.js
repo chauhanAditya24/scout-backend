@@ -1,8 +1,15 @@
 const { default: axios } = require('axios')
 const Ground = require('../models/ground')
 const { validationResult } = require('express-validator')
-
+const cloudinary = require('cloudinary').v2
 const groundsCltr = {}
+
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 groundsCltr.list = (req, res) => {
     Ground.find()
@@ -14,24 +21,41 @@ groundsCltr.list = (req, res) => {
         })
 }
 
-groundsCltr.pictureUpdate = (req, res) => {
-    const { id } = req.params
-    Ground.findById(id)
-        .then((ground) => {
-            ground.groundPicture = req.file.filename
-            console.log('ground', ground)
-            Ground.findByIdAndUpdate(id, ground, { new: true, runValidators: true })
-                .then((updatedGround) => {
-                    console.log('updated ground', updatedGround)
-                    res.json(updatedGround)
-                })
-                .catch((err) => {
-                    res.json(err)
-                })
+groundsCltr.pictureUpdate = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        // cloudinary
+
+        const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err, result) => {
+            if (err) {
+                console.log('error in upload ', err)
+            } else {
+                console.log('success fully uploaded', result)
+            }
         })
-        .catch((err) => {
-            res.json(err)
-        })
+
+
+        Ground.findById(id)
+            .then((ground) => {
+                ground.groundPicture = cloudinaryUploadResult.secure_url
+                console.log('ground', ground)
+                Ground.findByIdAndUpdate(id, ground, { new: true, runValidators: true })
+                    .then((updatedGround) => {
+                        console.log('updated ground', updatedGround)
+                        res.json(updatedGround)
+                    })
+                    .catch((err) => {
+                        res.json(err)
+                    })
+            })
+            .catch((err) => {
+                res.json(err)
+            })
+    }
+    catch (err) {
+        console.log(err)
+    }
 }
 
 groundsCltr.register = async (req, res) => {
@@ -45,6 +69,15 @@ groundsCltr.register = async (req, res) => {
             const { body } = req
             const { file } = req
 
+            // uploading file to cloudinary
+            const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err, result) => {
+                if (err) {
+                    console.log('error in upload ', err)
+                } else {
+                    console.log('success fully uploaded', result)
+                }
+            })
+
             const groundObj = new Ground({
                 name: body.name,
                 location: body.location,
@@ -55,7 +88,7 @@ groundsCltr.register = async (req, res) => {
                 slotType: body.slotType,
                 userId: body.userId,
                 capacity: body.capacity,
-                groundPicture: file.filename
+                groundPicture: cloudinaryUploadResult.secure_url
             })
 
             // const res = await axios.get(`https://www.openstreetmap.org/search?${groundObj.location}`)

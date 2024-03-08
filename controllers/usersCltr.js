@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 const Ground = require('../models/ground')
 const Booking = require('../models/booking')
 const { validationResult } = require('express-validator')
+const cloudinary = require('cloudinary').v2
 // const stripe = require('stripe')('sk_test_51OPQrWSCsP2MbOhTp6SxnDg2GiBkkiglV1UidggfOhk4J6m84YlNH5ddsNGh5rCj4XMjZ5M0d1RBnqTu3KQ5z8GV001NXhKA6c',{
 //     apiVersion : '2023-08-16'
 // })
@@ -13,6 +14,12 @@ const stripe = require('stripe')('sk_test_51OPQrWSCsP2MbOhTp6SxnDg2GiBkkiglV1Uid
 })
 
 const nodemailer = require('nodemailer')
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 usersCltr = {}
 
@@ -50,8 +57,8 @@ usersCltr.mail = async (req, res) => {
             service: 'gmail',
             host: 'smtp.gmail.com',
             auth: {
-                user: 'scoutofficial24@gmail.com',
-                pass: 'kqoa pinl bgrh uglb'
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS
             },
         })
 
@@ -467,28 +474,44 @@ usersCltr.currentUser = async (req, res) => {
     }
 }
 
-usersCltr.pictureUpdate = (req, res) => {
-    const { body } = req
-    // console.log('req.file',req.file)
-    // console.log('req.userId',req.userId)
-    const file = req.file
-    User.findById(req.userId)
-        .then((user) => {
-            user.profilePicture = req.file.filename
-            // console.log('user check',user)
-            User.findByIdAndUpdate(req.userId, user, { new: true, runValidators: true })
-                .then((userUpdated) => {
-                    // console.log('updated user', userUpdated)
-                    res.json(userUpdated)
-                })
-                .catch((err) => {
-                    res.json(err)
-                })
+usersCltr.pictureUpdate = async (req, res) => {
+    try {
+        const { body } = req
+        // console.log('req.file',req.file)
+        // console.log('req.userId',req.userId)
+        const file = req.file
 
+        //cloudinary integration
+
+        const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err,result) => {
+            if(err){
+                console.log("error in uploading " , err)
+            }else {
+                console.log('success fully uploaded ' , result)
+            }
         })
-        .catch((err) => {
-            res.json(err)
-        })
+
+        User.findById(req.userId)
+            .then((user) => {
+                user.profilePicture = cloudinaryUploadResult.secure_url
+                // console.log('user check',user)
+                User.findByIdAndUpdate(req.userId, user, { new: true, runValidators: true })
+                    .then((userUpdated) => {
+                        // console.log('updated user', userUpdated)
+                        res.json(userUpdated)
+                    })
+                    .catch((err) => {
+                        res.json(err)
+                    })
+
+            })
+            .catch((err) => {
+                res.json(err)
+            })
+    }
+    catch (err) {
+        conosle.log(err)
+    }
 }
 
 // usersCltr.updatePicture = async (req, res) => {
@@ -520,10 +543,22 @@ usersCltr.register = async (req, res) => {
         res.json({ errors: errors.array() })
     }
     else {
-        // console.log('req file ', req.file)
+        console.log('req file ', req.file)
         try {
             const body = req.body
             const file = req.file
+
+            // uploading file to cloudinary
+            const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err, result) => {
+                if (err) {
+                    console.log('error in upload ', err)
+                } else {
+                    console.log('success fully uploaded', result)
+                }
+            })
+
+            console.log('cloudinary uploaded', cloudinaryUploadResult)
+            //
             // console.log('body = ', body)
             // console.log('file = ', file.destination + '/' + file.filename)
             // res.json({error: 'successfullt submitted the user'})
@@ -534,7 +569,8 @@ usersCltr.register = async (req, res) => {
                 password: body.password,
                 city: body.city,
                 sport: body.sport,
-                profilePicture: file.filename,
+                profilePicture: cloudinaryUploadResult.secure_url,
+                // profilePicture: file.filename,
                 role: body.role,
                 bio: body.bio
                 // profilePicture: file.destination + '/' + file.filename
