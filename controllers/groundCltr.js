@@ -21,42 +21,69 @@ groundsCltr.list = (req, res) => {
         })
 }
 
+
+//updated ground groundCltr
+
 groundsCltr.pictureUpdate = async (req, res) => {
+    console.log('tring to upload picture')
     try {
-        const { id } = req.params
+        const { id } = req.params;
+        const file = req.file;
 
-        // cloudinary
+        // Upload image to Cloudinary
+        const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path);
+        console.log(' after updating the picture' , cloudinaryUploadResult)
+        // Find the ground by ID and update the groundPicture field
+        const updatedGround = await Ground.findByIdAndUpdate(id, { groundPicture: cloudinaryUploadResult.secure_url }, { new: true, runValidators: true });
 
-        const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err, result) => {
-            if (err) {
-                console.log('error in upload ', err)
-            } else {
-                console.log('success fully uploaded', result)
-            }
-        })
+        if (!updatedGround) {
+            return res.status(404).json({ error: "Ground not found" });
+        }
 
-
-        Ground.findById(id)
-            .then((ground) => {
-                ground.groundPicture = cloudinaryUploadResult.secure_url
-                console.log('ground', ground)
-                Ground.findByIdAndUpdate(id, ground, { new: true, runValidators: true })
-                    .then((updatedGround) => {
-                        console.log('updated ground', updatedGround)
-                        res.json(updatedGround)
-                    })
-                    .catch((err) => {
-                        res.json(err)
-                    })
-            })
-            .catch((err) => {
-                res.json(err)
-            })
-    }
-    catch (err) {
-        console.log(err)
+        res.json(updatedGround);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
     }
 }
+
+
+// groundsCltr.pictureUpdate = async (req, res) => {
+//     try {
+//         const { id } = req.params
+
+//         // cloudinary
+
+//         const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err, result) => {
+//             if (err) {
+//                 console.log('error in upload ', err)
+//             } else {
+//                 console.log('success fully uploaded', result)
+//             }
+//         })
+
+
+//         Ground.findById(id)
+//             .then((ground) => {
+//                 ground.groundPicture = cloudinaryUploadResult.secure_url
+//                 console.log('ground', ground)
+//                 Ground.findByIdAndUpdate(id, ground, { new: true, runValidators: true })
+//                     .then((updatedGround) => {
+//                         console.log('updated ground', updatedGround)
+//                         res.json(updatedGround)
+//                     })
+//                     .catch((err) => {
+//                         res.json(err)
+//                     })
+//             })
+//             .catch((err) => {
+//                 res.json(err)
+//             })
+//     }
+//     catch (err) {
+//         console.log(err)
+//     }
+// }
 
 groundsCltr.register = async (req, res) => {
     const errors = validationResult(req)
