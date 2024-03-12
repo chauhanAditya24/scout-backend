@@ -1,5 +1,7 @@
 const Booking = require('../models/booking')
 const { validationResult } = require('express-validator')
+const nodemailer = require('nodemailer')
+const User = require('../models/users')
 
 const dateToday = () => {
 
@@ -56,6 +58,34 @@ bookingCltr.book = async (req, res) => {
             } else {
                 const databack = await booking.save()
                 console.log('databack', databack)
+
+                const messageToSend = ` Your booking is confirmed for ${databack.name} - on - ${databack.date} for the time slot - ${databack.time}`
+                // const htmlBodyToSend = <b> {messageToSend} </b>
+                const user = await User.findById(req.userId)
+
+                const toMail = []
+                toMail.push(user.email)
+                console.log('to mail list ' , toMail)
+                // mailing for mail confirmation 
+
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    host: 'smtp.gmail.com',
+                    auth: {
+                        user: process.env.GMAIL_USER,
+                        pass: process.env.GMAIL_PASS
+                    },
+                })
+
+                const info = await transporter.sendMail({
+                    from: '"Scout Official 👻" <scoutofficial24@gmail.com>', // sender address
+                    to: toMail, // list of receivers
+                    subject: "Booking Confirmation", // Subject line
+                    text: messageToSend, // plain text body
+                    html: `<b>${messageToSend}</b>`, // html body
+                })
+                console.log('inside the booking controller ' , info)
+
                 res.json(databack)
             }
 
@@ -73,22 +103,22 @@ bookingCltr.check = async (req, res) => {
 
     const errors = validationResult(req)
 
-    if(!errors.isEmpty()){
-        res.json({errors:errors.array()})
-    }else{
+    if (!errors.isEmpty()) {
+        res.json({ errors: errors.array() })
+    } else {
         try {
             const { body } = req
             console.log('body ', body)
-    
+
             const startTime2 = body.time.split('-')[0]
             const endTime2 = body.time.split('-')[1]
-    
+
             const data = await Booking.find({ groundId: body.groundId })
             console.log(' time 2 ', data)
-    
+
             // const startTime1 = data.time.split('-')[0]
             // const endTime1 = data.time.split('-')[1]
-    
+
             if (data) {
                 let flag = false
                 data.forEach((ele) => {
@@ -97,12 +127,12 @@ bookingCltr.check = async (req, res) => {
                     // if (ele.time === body.time && ele.date === body.date) {
                     //     flag = true
                     // }
-    
+
                     if (ele.date === body.date) {
-    
+
                         const startTime1 = ele.time.split('-')[0]
                         const endTime1 = ele.time.split('-')[1]
-    
+
                         if ((startTime1 === startTime2 && endTime1 === endTime2) || (startTime1 > startTime2 && endTime1 === endTime2) || (startTime1 === startTime2 && endTime1 < endTime2) || (startTime2 > startTime1 && startTime2 < endTime1) || (startTime1 > startTime2 && endTime1 < endTime2) || (startTime1 < endTime2 && endTime1 > endTime2)) {
                             // console.log('slot is not avaiable')
                             flag = true
@@ -111,21 +141,21 @@ bookingCltr.check = async (req, res) => {
                         //}
                     }
                 })
-    
+
                 if (flag) {
                     res.json({ msg: 'not available' })
                 } else {
                     res.json({ msg: 'available' })
                 }
-    
+
             } else {
                 res.json({ msg: 'inside else' })
             }
-    
+
         } catch (err) {
             res.json(err)
         }
-    
+
     }
 }
 
