@@ -547,6 +547,8 @@ usersCltr.register = async (req, res) => {
             const body = req.body
             const file = req.file
 
+            console.log('file check inside the register functionality',file)
+
             // uploading file to cloudinary
             const cloudinaryUploadResult = await cloudinary.uploader.upload(file.path, (err, result) => {
                 if (err) {
