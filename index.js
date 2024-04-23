@@ -30,10 +30,12 @@ const server = app.listen(PORT, () => {
     console.log('server running on port: ', PORT)
 })
 
+// updating url 
+// origin: 'http://localhost:3000' ---> https://scouttt.netlify.app
 const io = require('socket.io')(server, {
     pingTimeout: 60000,
     cors: {
-        origin: 'http://localhost:3000'
+        origin: 'https://scouttt.netlify.app'
     }
 })
 
