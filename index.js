@@ -30,12 +30,10 @@ const server = app.listen(PORT, () => {
     console.log('server running on port: ', PORT)
 })
 
-// updating the origin url
-// 'http://localhost:3000' ---> https://scouttt.netlify.app/
 const io = require('socket.io')(server, {
     pingTimeout: 60000,
     cors: {
-        origin: 'https://scouttt.netlify.app/'
+        origin: 'http://localhost:3000'
     }
 })
 
@@ -62,10 +60,10 @@ io.on('connection', (socket) => {
         }
 
         chat.users.forEach((ele) => {
-            console.log('ele id',ele)
+            console.log('ele id', ele)
             if (ele._id === newMessageRecieved.sender._id) return
 
-            socket.in(ele._id).emit('message recieved',newMessageRecieved)
+            socket.in(ele._id).emit('message recieved', newMessageRecieved)
         })
 
     })
