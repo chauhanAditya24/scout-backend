@@ -136,7 +136,6 @@ usersCltr.payment = async (req, res) => {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
-            //updating the urls
             success_url: 'https://scouttt.netlify.app/payment/success',
             cancel_url: 'https://scouttt.netlify.app/payment/cancel',
             // success_url: 'http://localhost:3000/payment/success',
